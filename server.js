@@ -306,6 +306,14 @@ io.on('connection',function(socket){
       ack('ack for emit');
     });
 
+    socket.on('rem_buf', function(data, ack) {
+      console.log('remove buffer: ' + data);
+      FS.unlink(data, (err) => {
+        if (err) throw err;
+      });
+      ack('remove done');
+    });
+
     socket.on('message', function(data, ack) {
       now = new Date();
       var filename = date(now, 'yyyymmddHHMMssl');
