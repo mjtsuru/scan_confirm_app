@@ -127,7 +127,7 @@ var sketch1_status = function(p) {
   song = p.loadSound('data/shinkazoku.wav');
   p.setup = function() {
     cnv = p.createCanvas(SCAN_IMG_W / SCAN_IMG_DIV, STATUS_H);
-    p.background(0);
+    p.background(255);
     cnv.position(SCAN_IMG_X_ZERO, SCAN_IMG_Y_ZERO - STATUS_H);
     cnv.mouseOver(Status1_Selected);
     cnv.mouseOut(Status1_Diselected);
@@ -191,7 +191,7 @@ var sketch2_status = function(p) {
   song = p.loadSound('data/shinkazoku.wav');
   p.setup = function() {
     cnv = p.createCanvas(SCAN_IMG_W / SCAN_IMG_DIV, STATUS_H);
-    p.background(0);
+    p.background(255);
     cnv.position(SCAN_IMG_X_ZERO + SCAN_IMG_X_PADDING, SCAN_IMG_Y_ZERO - STATUS_H);
     cnv.mouseOver(Status2_Selected);
     cnv.mouseOut(Status2_Diselected);

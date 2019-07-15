@@ -19,6 +19,10 @@ const LOCAL_SCANNED_BUFFER = URI_SCANNED_BUFFER;
 const LOCAL_SCANNED_IMAGES = URI_SCANNED_IMAGES;
 const LOCAL_PRINT_BUFFER = URI_PRINT_BUFFER;
 
+const APP_RECEPTION = 'r';
+const APP_PLAYGROUND = 'p';
+var APP_SELECT = APP_RECEPTION;
+
 /*
 * Modules
 */
@@ -53,18 +57,44 @@ pdfpath = require('path');
 program
   .option('--cam1 <text>')
   .option('--cam2 <text>', 'Set uvc camera 2')
+  .option('--app <text>')
   .parse(process.argv);
 
+//Parse args
 var ops = program.opts();
 if (isNaN(parseInt(ops.cam1))) {
   CAMERA_NAME_1 = ops.cam1;
 } else {
   CAMERA_NAME_1 = parseInt(ops.cam1);
 }
+
 if (isNaN(parseInt(ops.cam2))) {
   CAMERA_NAME_2 = ops.cam2;
 } else {
   CAMERA_NAME_2 = parseInt(ops.cam2);
+}
+
+if (isNaN(parseInt(ops.app))) {
+  if (ops.app == APP_RECEPTION) {
+    APP_SELECT = ops.app;
+    console.log('Working for Reception app');
+  } else if (ops.app == APP_PLAYGROUND) {
+    APP_SELECT = ops.app;
+    console.log('Working for Playground app');
+  } else {
+    console.log("app option error. default app is selected");
+  }
+} else {
+  var whichapp = parseInt(ops.app);
+  if (whichapp == 0) {
+    APP_SELECT = APP_RECEPTION;
+    console.log('Working for Reception app');
+  } else if (whichapp == 1) {
+    APP_SELECT = APP_PLAYGROUND;
+    console.log('Working for Playground app');
+  } else {
+    console.log("app option error. default app is selected");
+  }
 }
 
 //Use chokidar
@@ -171,6 +201,7 @@ var storage = multer.diskStorage({
 });
 var upload = multer({storage: storage});
 
+app.use(express.static('/'));
 app.use(express.static('.'));
 //To Provide scanned file list
 app.use(express.static(URI_SCAN_LIST));
@@ -180,8 +211,12 @@ app.use(express.static(URI_SCANNED_IMAGES));
 app.use(bodyParser.json()) // for parsing application/x-www-form-urlencoded
 
 app.get('/' , function(req, res){
-    console.log('get req');
-    res.sendFile(__dirname+'/index.html');
+    console.log('Webapp opened');
+    if (APP_SELECT == APP_RECEPTION) {
+      res.sendFile(__dirname+'/reception.html');
+    } else {
+      res.sendFile(__dirname+'/playground.html');
+    }
 });
 
 app.get('/' + URI_SCAN_LIST , function(req, res){
