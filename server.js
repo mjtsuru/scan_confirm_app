@@ -235,6 +235,11 @@ app.get('/' + URI_SCAN_LIST , function(req, res){
       (cb) => {
         console.log("staging finished");
         res.send(JSON.stringify(scanned_file_list));
+        var msg = new Object();
+        msg.refresh = true;
+        my_socket.send(JSON.stringify(msg),function onack(res) {
+          console.log(res);
+        });
       },
     ]);
 });
@@ -297,7 +302,9 @@ app.post('/' + URI_PRINT_BUFFER,  (req, res)  => {
 });
 
 //socket.io messaging
+var my_socket;
 io.on('connection',function(socket){
+  my_socket = socket;
     console.log('connected');
 
     socket.on('msg', function(data, ack) {
@@ -308,10 +315,19 @@ io.on('connection',function(socket){
 
     socket.on('rem_buf', function(data, ack) {
       console.log('remove buffer: ' + data);
-      FS.unlink(data, (err) => {
-        if (err) throw err;
-      });
-      ack('remove done');
+      if (data != null) {
+        FS.unlink(URI_SCANNED_BUFFER + "/" + data, (err) => {
+          if (err) throw err;
+        });
+        scanned_file_list.files.some(function(v, i){
+          if (v==data) scanned_file_list.files.splice(i,1);
+        });
+        console.log(scanned_file_list);
+
+        ack('remove done');
+      } else {
+        ack('nothing to remove');
+      }
     });
 
     socket.on('message', function(data, ack) {

@@ -84,7 +84,7 @@ var sketchBack = function(p) {
 
 
 var sketch1 = function(p) {
-  img_scan1 = p.loadImage('data/trans.png'); //720 x 1115
+  img_scan1 = p.loadImage('data/dummy_g.png'); //720 x 1115
   //done = p.loadImage('data/done.png'); //2237 × 836
   p.setup = function() {
     cnv = p.createCanvas(SCAN_IMG_W / SCAN_IMG_DIV, SCAN_IMG_H / SCAN_IMG_DIV);
@@ -104,7 +104,7 @@ var sketch1 = function(p) {
 };
 
 var sketch2 = function(p) {
-  img_scan2 = p.loadImage('data/trans.png'); //720 x 1115
+  img_scan2 = p.loadImage('data/dummy_g.png'); //720 x 1115
   //done = p.loadImage('data/done.png'); //2237 × 836
   p.setup = function() {
     cnv = p.createCanvas(SCAN_IMG_W / SCAN_IMG_DIV, SCAN_IMG_H / SCAN_IMG_DIV);
