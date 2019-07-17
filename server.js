@@ -23,6 +23,8 @@ const APP_RECEPTION = 'r';
 const APP_PLAYGROUND = 'p';
 var APP_SELECT = APP_RECEPTION;
 
+const CROPSIZE_W = 720;
+const CROPSIZE_H = 1115;
 /*
 * Modules
 */
@@ -344,8 +346,8 @@ io.on('connection',function(socket){
               Jimp.read('tmp1.bmp', (err, func) => {
                 if (err) throw err;
                 func
-                  .crop(0, 0, 1115, 720)
                   .rotate(-90)
+                  .crop(0, 0, CROPSIZE_W, CROPSIZE_H)
                   .write(LOCAL_SCANNED_BUFFER + "/" + filename + ".jpg", jimpwritecallback(socket, ack, filename, 1));
               });
           });
