@@ -163,7 +163,7 @@ var sketch1_status = function(p) {
   p.draw = function() {
     if (img_slot_names[0] != null) p.background(255);
     p.tint(255, 255, 255, tint_val_scan1);
-    p.image(img_status[0], 0, 0, p.width, p.height)
+    p.image(img_status[0], 0, 0, p.width, p.height);
   }
 }
 function Status1_Selected() {

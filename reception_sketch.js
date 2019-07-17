@@ -5,12 +5,18 @@ CANVAS_BACK_H = 1080;
 
 SCAN_IMG_W = 720;
 SCAN_IMG_H = 1115;
-SCAN_IMG_DIV = 3.28;
+SCAN_IMG_DIV = 3.5;
+SCAN_IMG_INNER_PADDING_X = 7;
+SCAN_IMG_INNER_PADDING_Y = 7;
 SCAN_IMG_X_ZERO = 44;
-SCAN_IMG_Y_ZERO = 172;
+SCAN_IMG_Y_ZERO = 176;
 SCAN_IMG_X_PADDING = 652;
 
-STATUS_H = 32;
+STATUS_H_REAL = 276;
+STATUS_W_REAL = 947;
+STATUS_DIV = 8.6;
+STATUS_H = STATUS_H_REAL / STATUS_DIV;
+STATUS_W = STATUS_W_REAL / STATUS_DIV;
 
 CANVAS_HEIGHT = 372;
 CANVAS_WIDTH = 240;
@@ -84,12 +90,12 @@ var sketchBack = function(p) {
 
 
 var sketch1 = function(p) {
-  img_scan1 = p.loadImage('data/dummy_g.png'); //720 x 1115
+  img_scan1 = p.loadImage('data/trans_y.png'); //720 x 1115
   //done = p.loadImage('data/done.png'); //2237 × 836
   p.setup = function() {
     cnv = p.createCanvas(SCAN_IMG_W / SCAN_IMG_DIV, SCAN_IMG_H / SCAN_IMG_DIV);
-    p.background(0);
-    cnv.position(SCAN_IMG_X_ZERO, SCAN_IMG_Y_ZERO);
+    //p.background(0);
+    cnv.position(SCAN_IMG_X_ZERO + SCAN_IMG_INNER_PADDING_X, SCAN_IMG_Y_ZERO + SCAN_IMG_INNER_PADDING_Y);
   };
 
   p.draw = function() {
@@ -104,11 +110,11 @@ var sketch1 = function(p) {
 };
 
 var sketch2 = function(p) {
-  img_scan2 = p.loadImage('data/dummy_g.png'); //720 x 1115
+  img_scan2 = p.loadImage('data/trans_y.png'); //720 x 1115
   //done = p.loadImage('data/done.png'); //2237 × 836
   p.setup = function() {
     cnv = p.createCanvas(SCAN_IMG_W / SCAN_IMG_DIV, SCAN_IMG_H / SCAN_IMG_DIV);
-    p.background(0);
+    //p.background(0);
     cnv.position(SCAN_IMG_X_ZERO + SCAN_IMG_X_PADDING, SCAN_IMG_Y_ZERO);
   };
 
@@ -122,11 +128,13 @@ var sketch2 = function(p) {
 };
 
 var scan1_status_change_done = 0;
-var sketch1_status = function(p) {
-  img_1_status = p.loadImage('data/ok_g.png');
+var sketch1_status_left = function(p) {
+  var img_left_size = STATUS_W * 2;
+  img_1_status_left = p.loadImage('data/ok_g.png');
+
   song = p.loadSound('data/shinkazoku.wav');
   p.setup = function() {
-    cnv = p.createCanvas(SCAN_IMG_W / SCAN_IMG_DIV, STATUS_H);
+    cnv = p.createCanvas(img_left_size, STATUS_H);
     p.background(255);
     cnv.position(SCAN_IMG_X_ZERO, SCAN_IMG_Y_ZERO - STATUS_H);
     cnv.mouseOver(Status1_Selected);
@@ -136,23 +144,29 @@ var sketch1_status = function(p) {
   p.draw = function() {
     if (scan1_status == SCAN1_STATUS_DOING) {
       if (scan1_status_change_done == 0) {
-        img_1_status = p.loadImage('data/doing_g.png');
+        img_left_size = STATUS_W * 2;
+        img_1_status_left = p.loadImage('data/doing_g.png');
         scan1_status_change_done = 1;
       }
     } else if (scan1_status == SCAN1_STATUS_LOADING) {
-      img_1_status = p.loadImage('data/batsu_g.png');
+      img_left_size = STATUS_W;
+      img_1_status_left = p.loadImage('data/batsu_g2.png');
       console.log('scan1_status to loaded');
       scan1_status = SCAN1_STATUS_LOADED;
       scan1_status_change_done = 0;
+
+      img_1_status_right = p.loadImage('data/next_g.png');
     } else if (scan1_status == SCAN1_STATUS_LOADED) {
       if (scan1_status_change_done == 0) {
         console.log('change status img to BATSU');
+        p.image(img_1_status_right, STATUS_W, 0, STATUS_W, STATUS_H);
         scan1_status_change_done = 1;
       }
     }
 
     p.tint(tint_val_scan1, tint_val_scan1);
-    p.image(img_1_status, 0, 0, p.width, p.height)
+    p.image(img_1_status_left, 0, 0, img_left_size, p.height);
+
   }
 
 }
@@ -185,8 +199,61 @@ function OnSendClickDev1() {
   });
 };
 
+var sketch1_status_right = function(p) {
+  var img_left_size = STATUS_W;
+  img_1_status_right = p.loadImage('data/trans_g2.png');
+  p.setup = function() {
+    cnv = p.createCanvas(img_left_size, STATUS_H);
+    p.background(255);
+    cnv.position(SCAN_IMG_X_ZERO + STATUS_W, SCAN_IMG_Y_ZERO - STATUS_H);
+    cnv.mouseOver(Status1Right_Selected);
+    cnv.mouseOut(Status1Right_Diselected);
+    cnv.mousePressed(OnImageDev1_OK);
+  };
+  p.draw = function() {
+    if (scan1_status == SCAN1_STATUS_DOING) {
+      if (scan1_status_change_done == 0) {
+        img_left_size = STATUS_W * 2;
+        img_1_status_left = p.loadImage('data/doing_g.png');
+      }
+    } else if (scan1_status == SCAN1_STATUS_LOADING) {
+      img_left_size = STATUS_W;
+      img_1_status_left = p.loadImage('data/batsu_g2.png');
+      console.log('scan1_status to loaded');
+
+      img_1_status_right = p.loadImage('data/next_g.png');
+    } else if (scan1_status == SCAN1_STATUS_LOADED) {
+      if (scan1_status_change_done == 0) {
+        console.log('change status img to BATSU');
+        p.image(img_1_status_right, STATUS_W, 0, STATUS_W, STATUS_H);
+      }
+    }
+    p.tint(tint_val_scan1, tint_val_scan1);
+    p.image(img_1_status_right, STATUS_W, 0, STATUS_W, STATUS_H);
+  }
+}
+
+function Status1Right_Selected() {
+  console.log("Status1 mouse over");
+  tint_val_scan1 = 127;
+}
+
+function Status1Right_Diselected() {
+  console.log("Status1 mouse out");
+  tint_val_scan1 = 255;
+}
+
+function OnImageDev1_OK() {
+  console.log("sending dev1 scan msg");
+//  scan1_status = SCAN1_STATUS_DOING;
+
+  socket.send('stage_dev1img',function onack(res) {
+    console.log(res);
+  });
+};
+
 var scan2_status_change_done = 0;
-var sketch2_status = function(p) {
+var sketch2_status_left = function(p) {
   img_2_status = p.loadImage('data/ok_g.png');
   song = p.loadSound('data/shinkazoku.wav');
   p.setup = function() {
@@ -252,5 +319,7 @@ function OnSendClickDev2() {
 new p5(sketchBack, "container0");
 new p5(sketch1, "container1");
 new p5(sketch2, "container2");
-new p5(sketch1_status, "container3");
-new p5(sketch2_status, "container4");
+new p5(sketch1_status_left, "container3");
+new p5(sketch1_status_right, "container4");
+new p5(sketch2_status_left, "container5");
+new p5(sketch2_status_right, "container6")
