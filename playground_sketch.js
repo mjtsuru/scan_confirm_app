@@ -1,22 +1,24 @@
 //For Reception
+CANVAS_BACK_DIV = 0.505;
+CANVAS_BACK_W = 2560 * CANVAS_BACK_DIV;
+CANVAS_BACK_H = 1440 * CANVAS_BACK_DIV;
+CANVAS_BACK_OFFSET_W =-5;
+CANVAS_BACK_OFFSET_H =-5;
 
-CANVAS_BACK_W = 2550;
-CANVAS_BACK_H = 1440;
-
+BACK_DIV = 0.5;
+BACK_IMG_W = 2560 * BACK_DIV;
+BACK_IMG_H = 1440 * BACK_DIV;
 //はがきは 100mm x 148mm ここははがきサイズ想定になっている
 //1585 x 2345
 SCAN_IMG_W = 100;
 SCAN_IMG_H = 148;
 
-SCAN_IMG_DIV = 0.526;
+SCAN_IMG_DIV = 0.523;
 SCAN_IMG_X_ZERO = 32.5;
 SCAN_IMG_Y_ZERO = 409;
-SCAN_IMG_X_PADDING = 204;
+SCAN_IMG_X_PADDING = 204.85;
 
 STATUS_H = 37.7; //1585 x 314 --- 190.5 x 37.7
-
-CANVAS_HEIGHT = 372;
-CANVAS_WIDTH = 240;
 CANVAS_UPPER_X = 100;
 CANVAS_LEFT_X = 100;
 CANVAS_LEFTEND_MARGIN = 100;
@@ -67,9 +69,9 @@ var sketchBack = function(p) {
     img_slot[i] = p.loadImage('data/trans_y.png');
   }
   p.setup = function() {
-    cnv_back = p.createCanvas(CANVAS_BACK_W / 2, CANVAS_BACK_H / 2);
+    cnv_back = p.createCanvas(CANVAS_BACK_W + CANVAS_BACK_OFFSET_W, CANVAS_BACK_H + CANVAS_BACK_OFFSET_H);
     p.background(0);
-    p.image(img_back, 0, 0, CANVAS_BACK_W / 2, CANVAS_BACK_H / 2);
+    p.image(img_back, 0, 0, BACK_IMG_W, BACK_IMG_H);
 
     for (let i in img_slot) {
       p.image(img_slot[i], SCAN_IMG_X_ZERO + SCAN_IMG_X_PADDING * i, SCAN_IMG_Y_ZERO, w, h);
@@ -80,7 +82,7 @@ var sketchBack = function(p) {
     //Change image src after scan
 
     //Exec Display
-    p.image(img_back, 0, 0, CANVAS_BACK_W / 2, CANVAS_BACK_H / 2);
+    p.image(img_back, 0, 0, BACK_IMG_W, BACK_IMG_H);
     for (let i in img_slot) {
       p.image(img_slot[i], SCAN_IMG_X_ZERO + SCAN_IMG_X_PADDING * i, SCAN_IMG_Y_ZERO, w, h);
     }
@@ -125,7 +127,10 @@ var task = function(p) {
 
     ack('client ack for send');
   });
-
+  p.setup = function() {
+    cnv = p.createCanvas(0, 0);
+    cnv.position(0, 0);
+  }
   p.draw = function() {
     if (flg_refresh) {
       console.log("refresh");
