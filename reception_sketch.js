@@ -91,8 +91,8 @@ var sketchBack = function(p) {
   };
   p.draw = function() {
     p.image(img_back, 0, 0, CANVAS_BACK_W / 2, CANVAS_BACK_H / 2);
-    if (keyLeftState != KEY_STATE_BUSY) {
-      if (p.keyIsPressed) {
+    if (p.keyIsPressed) {
+      if (keyLeftState != KEY_STATE_BUSY) {
         if (p.key == 'a') {
           keyLeftState = KEY_STATE_BUSY;
           if (scan1_status == SCAN1_STATUS_OK) {
@@ -101,9 +101,17 @@ var sketchBack = function(p) {
             console.log('confirmation');
             OnConfirmDev1();
           }
-        } else if (p.key == 'l') {
-          keyLeftState = KEY_STATE_BUSY;
-          OnSendClickDev2();
+        }
+      }
+      if (keyRightState != KEY_STATE_BUSY) {
+        if (p.key == 'l') {
+          keyRightState = KEY_STATE_BUSY;
+          if (scan2_status == SCAN2_STATUS_OK) {
+            OnSendClickDev2();
+          } else if (scan2_status == SCAN2_STATUS_BATSU) {
+            console.log('confirmation');
+            OnConfirmDev2();
+          }
         }
       }
     }
@@ -118,6 +126,16 @@ function OnConfirmDev1() {
   scan1_status = SCAN1_STATUS_OK;
 //  keyLeftState = KEY_STATE_BUSY;
 }
+
+function OnConfirmDev2() {
+  socket.emit('stage_buf', img_scan2_src, function onack(res) {
+    console.log(res);
+  });
+  scan2_status_change_done = 3;
+  scan2_status = SCAN1_STATUS_OK;
+//  keyLeftState = KEY_STATE_BUSY;
+}
+
 
 var sketch1 = function(p) {
   img_scan1 = p.loadImage('data/trans_g2.png'); //720 x 1115
@@ -196,7 +214,8 @@ var sketch1_status_left = function(p) {
         keyLeftState = KEY_STATE_IDLE;
       }
     }
-    p.tint(tint_val_scan1, tint_val_scan1);
+    p.background(255);
+    p.tint(255,255,255, tint_val_scan1);
     p.image(img_1_status_left, 0, 0, img_left_size, p.height);
   }
 }
@@ -288,9 +307,9 @@ var sketch2_status_left = function(p) {
     cnv = p.createCanvas(img_left_size, STATUS_H);
     p.background(255);
     cnv.position(SCAN_IMG_X_PADDING + SCAN_IMG_X_ZERO, SCAN_IMG_Y_ZERO - STATUS_H);
-    cnv.mouseOver(Status1_Selected);
-    cnv.mouseOut(Status1_Diselected);
-    cnv.mousePressed(OnSendClickDev1);
+    cnv.mouseOver(Status2_Selected);
+    cnv.mouseOut(Status2_Diselected);
+    cnv.mousePressed(OnSendClickDev2);
     p.image(img_2_status_left, 0, 0, img_left_size, p.height);
   };
   p.draw = function() {
@@ -325,26 +344,25 @@ var sketch2_status_left = function(p) {
         cnv = p.createCanvas(img_left_size, STATUS_H);
         img_2_status_left = p.loadImage('data/ok_g.png');
         scan2_status_change_done = 1;
-        keyLeftState = KEY_STATE_IDLE;
+        keyRightState = KEY_STATE_IDLE;
       }
     }
-    p.tint(tint_val_scan2, tint_val_scan2);
+    p.background(255);
+    p.tint(255,255,255, tint_val_scan2);
     p.image(img_2_status_left, 0, 0, img_left_size, p.height);
   }
 }
 
-
 var sketch2_status_right = function(p) {
   var img_left_size = STATUS_W;
   img_2_status_right = p.loadImage('data/trans_g2.png');
-//    img_2_status_right = p.loadImage('data/next_g.png');
   p.setup = function() {
     cnv = p.createCanvas(img_left_size, STATUS_H);
-    //p.background(0);
+    //p.background(255);
     cnv.position(SCAN_IMG_X_PADDING + SCAN_IMG_X_ZERO + STATUS_W, SCAN_IMG_Y_ZERO - STATUS_H);
-    cnv.mouseOver(Status1Right_Selected);
-    cnv.mouseOut(Status1Right_Diselected);
-    cnv.mousePressed(OnConfirmDev1);
+    cnv.mouseOver(Status2Right_Selected);
+    cnv.mouseOut(Status2Right_Diselected);
+    cnv.mousePressed(OnConfirmDev2);
     //p.image(img_2_status_right)
   };
   p.draw = function() {
@@ -376,7 +394,7 @@ var sketch2_status_right = function(p) {
         //p.image(img_2_status_right, 0, 0, STATUS_W, STATUS_H);
       }
     }
-//    p.tint(tint_val_scan2, tint_val_scan2);
+    //p.tint(tint_val_scan2, tint_val_scan2);
     p.image(img_2_status_right, 0, 0, STATUS_W, STATUS_H);
 
   }
@@ -422,52 +440,60 @@ function OnSendClickDev1() {
 
 function Status1Right_Selected() {
   console.log("Status1Right mouse over");
-  tint_val_scan1 = 127;
+  //tint_val_scan1 = 127;
 }
 
 function Status1Right_Diselected() {
   console.log("Status1Right mouse out");
-  tint_val_scan1 = 255;
+  //tint_val_scan1 = 255;
 }
 
 
-function Status2Left_Selected() {
+function Status2_Selected() {
   console.log("Status2 mouse over");
   tint_val_scan2 = 127;
 }
 
-function Status2Left_Diselected() {
+function Status2_Diselected() {
   console.log("Status2 mouse out");
   tint_val_scan2 = 255;
 }
 
 function OnSendClickDev2() {
   console.log("sending dev2 scan msg");
-  scan2_status = SCAN2_STATUS_DOING;
-
-  if (song.isPlaying()) {
-    // .isPlaying() returns a boolean
-    song.stop();
-
+  if (scan2_status == SCAN2_STATUS_BATSU) {
+    socket.emit('rem_buf', img_scan2_src, function onack(res) {
+      console.log(res);
+    });
+    scan2_status_change_done = 3;
+    scan2_status = SCAN2_STATUS_OK;
   } else {
-    song.play();
+    scan2_status = SCAN2_STATUS_DOING;
+    scan2_status_change_done = 0;
+    if (song.isPlaying()) {
+      // .isPlaying() returns a boolean
+      song.stop();
 
+    } else {
+      song.play();
+
+    }
+
+    socket.send('scan_device2',function onack(res) {
+      console.log(res);
+    });
   }
-
-  socket.send('scan_device2',function onack(res) {
-    console.log(res);
-  });
 };
 
 
 function Status2Right_Selected() {
   console.log("Status2 mouse over");
-  tint_val_scan2 = 127;
+  //tint_val_scan2 = 127;
 }
 
 function Status2Right_Diselected() {
   console.log("Status2 mouse out");
-  tint_val_scan2 = 255;
+  //tint_val_scan2 = 255;
 }
 
 function OnImageDev2_OK() {
