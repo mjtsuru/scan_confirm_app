@@ -55,6 +55,7 @@ socket.on('message', function(msg, ack) {
       img_scan1_src = msg.filename;
       console.log('scan1_status to loading');
       scan1_status = SCAN1_STATUS_LOADING;
+      keyState = KEY_STATE_IDLE;
     }
   } else if (msg.device == 2) {
     if (scan2_status == SCAN2_STATUS_DOING) {
@@ -75,6 +76,9 @@ function sketchFuncs(p) {
 
 var cnv_back;
 let song;
+KEY_STATE_IDLE = 0;
+KEY_STATE_BUSY = 1;
+var keyState = KEY_STATE_IDLE;
 var sketchBack = function(p) {
   img_back = p.loadImage('data/scan_back_g.png');
   p.setup = function() {
@@ -85,9 +89,33 @@ var sketchBack = function(p) {
   };
   p.draw = function() {
     p.image(img_back, 0, 0, CANVAS_BACK_W / 2, CANVAS_BACK_H / 2);
+    if (keyState != KEY_STATE_BUSY) {
+      if (p.keyIsPressed) {
+        if (p.key == 'a') {
+          keyState = KEY_STATE_BUSY;
+          if (scan1_status == SCAN1_STATUS_OK) {
+            OnSendClickDev1();
+          } else if (scan1_status == SCAN1_STATUS_BATSU) {
+            console.log('confirmation');
+            OnConfirmDev1();
+          }
+        } else if (p.key == 'l') {
+          keyState = KEY_STATE_BUSY;
+          OnSendClickDev2();
+        }
+      }
+    }
   };
 }
 
+function OnConfirmDev1() {
+  socket.emit('stage_buf', img_scan1_src, function onack(res) {
+    console.log(res);
+  });
+  scan1_status_change_done = 3;
+  scan1_status = SCAN1_STATUS_OK;
+//  keyState = KEY_STATE_BUSY;
+}
 
 var sketch1 = function(p) {
   img_scan1 = p.loadImage('data/trans_g2.png'); //720 x 1115
@@ -161,6 +189,7 @@ var sketch1_status_left = function(p) {
       }
     } else if (scan1_status == SCAN1_STATUS_LOADING) {
       img_left_size = STATUS_W;
+      cnv = p.createCanvas(img_left_size, STATUS_H);
       img_1_status_left = p.loadImage('data/batsu_g2.png');
 //      img_1_status_left = p.loadImage('data/next_g.png');
       console.log('scan1_status to loaded');
@@ -183,6 +212,7 @@ var sketch1_status_left = function(p) {
         cnv = p.createCanvas(img_left_size, STATUS_H);
         img_1_status_left = p.loadImage('data/ok_g.png');
         scan1_status_change_done = 1;
+        keyState = KEY_STATE_IDLE;
       }
     }
 
@@ -214,7 +244,7 @@ function OnSendClickDev1() {
     scan1_status = SCAN1_STATUS_OK;
   } else {
     scan1_status = SCAN1_STATUS_DOING;
-
+    scan1_status_change_done = 0;
     if (song.isPlaying()) {
       // .isPlaying() returns a boolean
       song.stop();
@@ -240,7 +270,7 @@ var sketch1_status_right = function(p) {
     cnv.position(SCAN_IMG_X_ZERO + STATUS_W, SCAN_IMG_Y_ZERO - STATUS_H);
     cnv.mouseOver(Status1Right_Selected);
     cnv.mouseOut(Status1Right_Diselected);
-    cnv.mousePressed(OnImageDev1_OK);
+    cnv.mousePressed(OnConfirmDev1);
     //p.image(img_1_status_right)
   };
   p.draw = function() {
@@ -287,15 +317,6 @@ function Status1Right_Diselected() {
   console.log("Status1Right mouse out");
   tint_val_scan1 = 255;
 }
-
-function OnImageDev1_OK() {
-  console.log("sending dev1 scan msg");
-//  scan1_status = SCAN1_STATUS_DOING;
-
-  socket.send('stage_dev1img',function onack(res) {
-    console.log(res);
-  });
-};
 
 var scan2_status_change_done = 0;
 var sketch2_status_left = function(p) {

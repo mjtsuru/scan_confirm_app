@@ -42,7 +42,7 @@ var app = express();
 var http = require('http').Server(app);
 // for interactive messaging
 const io = require('socket.io')(http);
-const PORT = process.env.PORT || 80;
+const PORT = process.env.PORT || 8080;
 // for the filesystem monitoring
 var chokidar = require('chokidar');
 // for the filename timestamp
@@ -331,6 +331,14 @@ io.on('connection',function(socket){
         ack('nothing to remove');
       }
     });
+
+    socket.on('stage_buf', function(data, ack) {
+      console.log('staging: ' + data);
+      if (data != null) {
+        FS.renameSync(LOCAL_SCANNED_BUFFER + "/" + data, LOCAL_SCANNED_IMAGES + "/" + data);
+        ack('staging done');
+      }
+    })
 
     socket.on('message', function(data, ack) {
       now = new Date();
